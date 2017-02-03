@@ -1,16 +1,20 @@
-web:
-  build: .
-  command: python /code/app/app.py
-  ports:
-   - "8082:8082"
-  volumes:
-   - .:/code
-  links:
-   - db
-  hostname: myappserver
-db:
-  hostname: mysqlserver
-  image: orchardup/mysql
-  environment:
-     MYSQL_ROOT_PASSWORD: p@ssw0rd123
-     MYSQL_DATABASE: wordpress
+version: '2'
+services:
+  web:
+    build: .
+    command: ["./wait-for-it.sh", "db:3306", "--", "python", "/code/app/app.py"] #python /code/app/app.py
+    ports:
+     - "8082:8082"
+    volumes:
+     - .:/code
+    links:
+     - db
+    hostname: myappserver
+  db:
+    hostname: mysqlserver
+    image: orchardup/mysql
+    environment:
+       MYSQL_ROOT_PASSWORD: p@ssw0rd123
+       MYSQL_DATABASE: wordpress
+    volumes:
+      - /Volumes/Rosetta/Clients/MarketForward:/code/data
