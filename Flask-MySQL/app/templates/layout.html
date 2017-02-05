@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
 </head>
 <body>
-   <div class="demo-layout mdl-layout mdl-js-layout mdl-layout--fixed-header">
+   <div class="demo-layout mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--fixed-drawer">
      <header class="demo-header mdl-layout__header mdl-color--grey-100 mdl-color-text--grey-600">
        <div class="mdl-layout__header-row">
          <span class="mdl-layout-title">{% block title%}{% endblock %}</span>
@@ -21,12 +21,33 @@
          </div>
        </div>
      </header>
+     <div class="mdl-layout__drawer">
+       <span class="mdl-layout-title">Search</span>
+       <nav class="mdl-navigation">
+         <!-- Numeric Textfield -->
+         <div id="search-containerId" class="search-container">
+         </div>
+         <a class="mdl-navigation__link" href="">Division</a>
+         <a class="mdl-navigation__link" href="">District</a>
+         <a class="mdl-navigation__link" href="">Complex</a>
+         <a class="mdl-navigation__link" href="">Branch</a>
+       </nav>
+     </div>
      <main class="mdl-layout__content mdl-color--grey-100">
        {% block main %}
 
        {% endblock %}
      </main>
    </div>
-     <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+   <script
+     src="https://code.jquery.com/jquery-3.1.1.min.js"
+     integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+     crossorigin="anonymous"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.1.0/react.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.1.0/react-dom.js"></script>
+   <script src="http://cdnjs.cloudflare.com/ajax/libs/react/0.13.3/JSXTransformer.js"></script>
+   <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+   <script src="{{  url_for('static', filename='search.js') }}" type="text/jsx"></script>
+   {% block react %}{% endblock %}
  </body>
 </html>

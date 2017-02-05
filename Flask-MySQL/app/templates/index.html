@@ -4,56 +4,11 @@
 {% block main %}
   <div class="mdl-grid">
    <div class="demo-charts mdl-color--white mdl-shadow--2dp mdl-cell mdl-cell--12-col mdl-grid">
-     <span class="mdl-layout-title">Orders</span>
+     <a href="/"><span class="mdl-layout-title">Orders</span></a>
    </div>
-   <div class="demo-charts mdl-color--white mdl-shadow--2dp mdl-cell mdl-cell--12-col mdl-grid">
-     <div class="mdl-paging">
-       <span class="mdl-paging__per-page"><span class="mdl-paging__per-page-label">Results per page:</span><span class="mdl-paging__per-page-value">{{ orders.per_page }}</span></span>
-       {% if orders.has_prev %}<a id="prev-page" href="{{ url_for('index', page=orders.prev_num) }}" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-paging__prev"><i class="material-icons">keyboard_arrow_left</i></a>{% endif %}
-       <!--
-      <button id="HkhZcTBbWFADje7t" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-paging__per-page-dropdown"><i class="material-icons">arrow_drop_down</i></button>
-      <ul for="HkhZcTBbWFADje7t" class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect mdl-js-ripple-effect--ignore-events">
-        <li tabindex="-1" data-value="10" class="mdl-menu__item mdl-js-ripple-effect">10</span>
-        </li>
-        <li tabindex="-1" data-value="20" class="mdl-menu__item mdl-js-ripple-effect">20</span>
-        </li>
-        <li tabindex="-1" data-value="30" class="mdl-menu__item mdl-js-ripple-effect">30</span>
-        </li>
-        <li tabindex="-1" data-value="40" class="mdl-menu__item mdl-js-ripple-effect">40</span>
-        </li>
-        <li tabindex="-1" data-value="50" class="mdl-menu__item mdl-js-ripple-effect">50</span>
-        </li>
-      </ul>
-    -->
-    <span class="mdl-paging__count">{{ orders.page }} de {{ orders.pages }}</span>
-      {% if orders.has_next %}<a id="next-page" href="{{ url_for('index', page=orders.next_num) }}" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-paging__next"><i class="material-icons">keyboard_arrow_right</i></a>{% endif %}
-    </div>
-     <table class="mdl-data-table mdl-js-data-table">
-       <thead>
-         <tr>
-           <th class="mdl-data-table__cell--non-numeric">Order Number</th>
-           <th class="mdl-data-table__cell--non-numeric">Creator</th>
-           <th class="mdl-data-table__cell--non-numeric">Close Date</th>
-           <th class="mdl-data-table__cell--non-numeric">Status</th>
-           <th class="mdl-data-table__cell--non-numeric">Ad Code</th>
-           <th class="mdl-data-table__cell--non-numeric">ARF</th>
-           <th class="mdl-data-table__cell--non-numeric">File</th>
-         </tr>
-       </thead>
-       <tbody>
-         {% for order in orders.items %}
-          <tr>
-            <td>{{ order.pk_id }}</td>
-            <td class="mdl-data-table__cell--non-numeric">{{ order.creator.username }}</td>
-            <td>{{ order.materials_close_date }}</td>
-            <td class="mdl-data-table__cell--non-numeric">{{ order.status.name_for_display }}</td>
-            <td class="mdl-data-table__cell--non-numeric">{% if order.template %}{{ order.template.headline.code }}{% endif %}</td>
-            <td class="mdl-data-table__cell--non-numeric"><a href="{{ url_for('arf', orderId=order.pk_id) }}" target="_blank"><i class="material-icons">description</i></a></td>
-            <td class="mdl-data-table__cell--non-numeric"><i class="material-icons">insert_drive_file</i></td>
-          </tr>
-         {% endfor %}
-       </tbody>
-     </table>
-   </div>
+   <div id="content"></div>
   </div>
+{% endblock %}
+{% block react %}
+  <script src="{{  url_for('static', filename='index.js') }}" type="text/jsx"></script>
 {% endblock %}

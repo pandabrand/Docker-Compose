@@ -1,7 +1,8 @@
 from sqlalchemy.orm import relationship
 from model import db
-from sqlalchemy import Table, Column, Integer, ForeignKey
+from sqlalchemy import Table, Column, Integer, String, ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
+from marshmallow import Schema, fields, ValidationError, pre_load
 
 # Prep for Class automapping
 # engine = create_engine('mysql://%s:%s@%s/%s'%(USER, PASSWORD, HOSTNAME, DATABASE)) # connect to server
@@ -102,10 +103,10 @@ class OrderStatus(db.Model):
 
 class Headline(db.Model):
     __tablename__ = 'lab_headline'
-    template = relationship('Template', foreign_keys='Template.fk_headline', primaryjoin='Headline.pk_id == Template.fk_headline', backref='headline')
     @hybrid_property
     def codeColorTitle(self):
         return ' : '.join([self.code, self.headlineColorType.type, self.title])
+    headline = relationship('Template', foreign_keys='Template.fk_headline', primaryjoin='Headline.pk_id == Template.fk_headline', backref='headline')
 
 class Template(db.Model):
     __tablename__ = 'cdg_template'
@@ -129,3 +130,80 @@ class AdditionalRunDate(db.Model):
         extend_existing=True,
     )
     order = relationship('Order', foreign_keys='Order.pk_id', primaryjoin='AdditionalRunDate.fk_order_id == Order.pk_id', backref='addtionalRunDates')
+
+
+# Schemas
+class DivisionSchema(Schema):
+    name = fields.String()
+    region_id = fields.String()
+    is_active = fields.String()
+
+class DistrictSchema(Schema):
+    name = fields.String()
+    is_active = fields.String()
+    area_number = fields.String()
+
+class ComplexSchema(Schema):
+    name = fields.String()
+    is_active = fields.String()
+    complex_is = fields.String()
+
+class BranchSchema(Schema):
+    name = fields.String()
+    is_active = fields.String()
+    branch_id = fields.String()
+    address1 = fields.String()
+    address2 = fields.String()
+    city = fields.String()
+    zip = fields.String()
+    state = fields.String()
+    complex = fields.Nested(ComplexSchema())
+    orders = fields.Nested('OrderSchema', many=True, exclude=('branch'))
+    managers = fields.Nested('UserInfoSchema', many=True, exclude=('managerBranches'))
+
+class UserSchema(Schema):
+    username = fields.String()
+    # orders = fields.Nested('OrderSchema', many=True, exclude=('creator', ))
+    userInfo = fields.Nested('UserInfoSchema', exclude=('user', ))
+
+class UserInfoSchema(Schema):
+    name_first = fields.String()
+    name_last = fields.String()
+    financial_advisor_id = fields.String()
+    employee_id = fields.String()
+    business_phone = fields.String()
+    full_name = fields.Method("get_full_name")
+    branch = fields.Nested(BranchSchema, exclude=('managers', 'orders'))
+    # managerBranches = fields.Nested(BranchSchema(), many=True, exclude=('managers', ))
+
+    def get_full_name(self, obj):
+        return '{0} {1}'.format(obj.name_last, obj.name_first)
+
+class OrderSchema(Schema):
+    pk_id = fields.Integer()
+    materials_close_date = fields.DateTime()
+    creator = fields.Nested(UserSchema, exclude=('orders', ))
+    status = fields.Nested('OrderStatusSchema', exclude=('orders', ))
+    template = fields.Nested('TemplateSchema')
+
+class OrderStatusSchema(Schema):
+    name_for_display = fields.String()
+    name = fields.String()
+
+class HeadlineSchema(Schema):
+    code = fields.String()
+    title = fields.String()
+    headlineColorType = fields.Nested('HeadlineColorTypeSchema')
+
+class HeadlineColorTypeSchema(Schema):
+    type = fields.String()
+
+class ApprovalDetailSchema(Schema):
+    comments = fields.String()
+    status_description = fields.String()
+    user_name = fields.String()
+    user_role = fields.String()
+
+class TemplateSchema(Schema):
+    path = fields.String()
+    headline = fields.Nested(HeadlineSchema)

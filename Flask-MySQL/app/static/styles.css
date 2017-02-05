@@ -72,3 +72,7 @@
 .mdl-paging__count + .mdl-paging__prev {
     /*margin-right: 68px;*/
 }
+
+.search-container {
+  margin: 1em;
+}

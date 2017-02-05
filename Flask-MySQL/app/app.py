@@ -1,8 +1,7 @@
 from flask import Flask, render_template, make_response
 from flask import request, jsonify
 from model import db
-from database import User, Division, Order, OrderStatus
-# from model import CreateDB
+from database import *
 from model import app as application
 import simplejson as json
 from sqlalchemy.exc import IntegrityError
@@ -27,6 +26,35 @@ PER_PAGE = 30
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
 current_milli_time = lambda: int(round(time.time() * 1000))
+
+sep = ';'
+
+# def filter_query(self, query):
+# 	# model_class = self._get_model_class(query) # returns the query's Model
+# 	raw_filters = request.args.getlist('filter')
+# 	for raw in raw_filters:
+# 	  try:
+# 	    key, op, value = raw.split(self.sep, 3)
+# 	  except ValueError:
+# 	    raise APIError(400, 'Invalid filter: %s' % raw)
+# 	  column = getattr(Order, key, None)
+# 	  if not column:
+# 	    raise APIError(400, 'Invalid filter column: %s' % key)
+# 	  if op == 'in':
+# 	    filt = column.in_(value.split(','))
+# 	  else:
+# 	    try:
+# 	      attr = filter(
+# 	        lambda e: hasattr(column, e % op),
+# 	        ['%s', '%s_', '__%s__']
+# 	      )[0] % op
+# 	    except IndexError:
+# 	      raise APIError(400, 'Invalid filter operator: %s' % op)
+# 	    if value == 'null':
+# 	      value = None
+# 	    filt = getattr(column, attr)(value)
+# 		query = query.filter(filt)
+# 	return query
 
 def link_callback(uri, rel):
     """
@@ -58,16 +86,38 @@ def link_callback(uri, rel):
 @app.route('/', defaults={'page': 1})
 @app.route('/<int:page>')
 def index(page):
-	orders_q = Order.query.filter(Order.fk_order_status_id == OrderStatus.pk_id).filter(or_(OrderStatus.name_for_display == 'Completed', OrderStatus.name_for_display == 'Ready for Download'))
-	orders = orders_q.paginate(page, PER_PAGE, False)
-	return render_template('index.html', orders=orders)
+	# orders_q = Order.query.filter(Order.fk_order_status_id == OrderStatus.pk_id).filter(or_(OrderStatus.name_for_display == 'Completed', OrderStatus.name_for_display == 'Ready for Download'))
+	# orders = orders_q.paginate(page, PER_PAGE, False)
+	return render_template('index.html')
 
 @app.route('/api', defaults={'page': 1})
 @app.route('/api/<int:page>')
 def index_json(page):
-	orders_q = Order.query.filter(Order.fk_order_status_id == OrderStatus.pk_id).filter(or_(OrderStatus.name_for_display == 'Completed', OrderStatus.name_for_display == 'Ready for Download'))
+	sort = request.args.get('sort') if request.args.get('sort') is not None else 'Order'
+	sort_direction = request.args.get('direction') if request.args.get('direction') is not None else 'asc'
+	sort_col = request.args.get('col') if request.args.get('col') is not None else 'pk_id'
+	sort_model = getattr(sys.modules[__name__], sort)
+	sort_col = getattr(sort_model, sort_col)
+	search_req = request.args.get('search') if request.args.get('search') is not None else ''
+	order_id = request.args.get('order_id') if request.args.get('order_id') is not None else ''
+
+	orders_q = Order.query
+	orders_q = orders_q.filter(Order.fk_order_status_id == OrderStatus.pk_id).filter(or_(OrderStatus.name_for_display == 'Completed', OrderStatus.name_for_display == 'Ready for Download'))
+
+	if search_req == 'true':
+		orders_q = orders_q.filter(Order.pk_id == order_id)
+
+	if sort_direction == 'desc':
+		orders_q = orders_q.order_by(sort_col.desc())
+	else:
+		orders_q = orders_q.order_by(sort_col)
+
+	# logging.debug(orders_q)
+	order_schema = OrderSchema(many=True)
 	orders = orders_q.paginate(page, PER_PAGE, False)
-	return jsonify({orders:orders.items})
+	items = orders.items
+	json_orders = order_schema.dump(items).data
+	return jsonify({'orders':json_orders, 'paginate':{'has_next':orders.has_next, 'has_prev':orders.has_prev, 'next_num':orders.next_num, 'prev_num':orders.prev_num, 'page':orders.page, 'pages':orders.pages, 'per_page':orders.per_page}})
 
 
 @app.route('/arf/<int:orderId>')
