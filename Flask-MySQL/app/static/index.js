@@ -7,6 +7,8 @@ class OrderRow extends React.Component {
   render() {
     let options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     let material_date = new Date(this.props.order.materials_close_date).toLocaleDateString('en-US', options);
+    let file_uri = this.props.order.hi_res_path;
+
     return <tr>
       <td>{this.props.order.pk_id}</td>
       <td className="mdl-data-table__cell--non-numeric">{this.props.order.creator ? this.props.order.creator.username : ''}</td>
@@ -14,7 +16,14 @@ class OrderRow extends React.Component {
       <td className="mdl-data-table__cell--non-numeric">{this.props.order.status.name_for_display}</td>
       <td className="mdl-data-table__cell--non-numeric">{this.props.order.template.headline ? this.props.order.template.headline.code : ''}</td>
       <td className="mdl-data-table__cell--non-numeric"><a href={'/arf/'+this.props.order.pk_id} target="_blank"><i className="material-icons">description</i></a></td>
-      <td className="mdl-data-table__cell--non-numeric"><i className="material-icons">insert_drive_file</i></td>
+      <td className="mdl-data-table__cell--non-numeric">
+        {file_uri ?
+          <a href={file_uri}><i className="material-icons">insert_drive_file</i></a>
+          :
+          <i className="material-icons">close</i>
+        }
+
+      </td>
     </tr>
   }
 }

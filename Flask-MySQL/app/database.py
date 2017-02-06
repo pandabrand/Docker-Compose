@@ -3,6 +3,8 @@ from model import db
 from sqlalchemy import Table, Column, Integer, String, ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from marshmallow import Schema, fields, ValidationError, pre_load
+import os.path
+import logging, sys
 
 # Prep for Class automapping
 # engine = create_engine('mysql://%s:%s@%s/%s'%(USER, PASSWORD, HOSTNAME, DATABASE)) # connect to server
@@ -19,6 +21,16 @@ BM_APPROVAL = 'Branch Manager'
 MM_APPROVAL = 'Media Manager'
 ADMIN_NAME = 'Admin'
 SITE_ADMIN = 'Site Administrator'
+WEB_FILE_PATH = '/static/data/'
+FULL_FILE_PATH = '/code/app/static/data/'
+
+def prepare_file_path(file):
+    file_array = file.split('\\')
+    file_element = file_array[-1]
+    full_path = FULL_FILE_PATH + file_element
+    web_path = WEB_FILE_PATH+file_element if os.path.isfile(full_path) else ''
+    return web_path
+
 
 class Division(db.Model):
     __tablename__ = 'lab_region'
@@ -182,9 +194,14 @@ class UserInfoSchema(Schema):
 class OrderSchema(Schema):
     pk_id = fields.Integer()
     materials_close_date = fields.DateTime()
+    hi_res_uri = fields.String()
+    hi_res_path = fields.Method("get_hi_res_path")
     creator = fields.Nested(UserSchema, exclude=('orders', ))
     status = fields.Nested('OrderStatusSchema', exclude=('orders', ))
     template = fields.Nested('TemplateSchema')
+
+    def get_hi_res_path(self, obj):
+        return prepare_file_path(obj.hi_res_uri)
 
 class OrderStatusSchema(Schema):
     name_for_display = fields.String()
